@@ -182,7 +182,7 @@ func sortTopSnacksByHighest(snacks []CustomerTopSnack) []CustomerTopSnack {
 	return snacks
 }
 
-func main() {
+func CustomerSnacksSorted() []CustomerTopSnack {
 	records := readAndParseCsvFile()
 
 	customers := convertRecordsIntoStructs(records)
@@ -191,11 +191,15 @@ func main() {
 
 	sortedStats := sortTopSnacksByHighest(stats)
 
+	return sortedStats
+}
+
+func main() {
 	/*
 	 * Generate json data out of the array struc that have been working with which is indented and
 	 * formated
 	 */
-	jsonOutput, err := json.MarshalIndent(sortedStats, "", "  ")
+	jsonOutput, err := json.MarshalIndent(CustomerSnacksSorted(), "", "  ")
 
 	if err != nil {
 		panic("Error converting array struct to json")
