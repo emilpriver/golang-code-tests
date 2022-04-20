@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/csv"
 	"encoding/json"
+	"errors"
 	"log"
 	"os"
 	"sort"
@@ -30,11 +31,12 @@ type Snack struct {
 /**
  * Read and parse the CSV file.
  */
-func readAndParseCsvFile() [][]string {
+func readAndParseCsvFile() ([][]string, error) {
 	csvFile, err := os.Open("./customers.csv")
 
 	if err != nil {
-		panic("Error opening CSV file")
+		log.Println(err)
+		return nil, errors.New(err.Error())
 	}
 
 	// Close the csvFile when program is closed
@@ -45,13 +47,14 @@ func readAndParseCsvFile() [][]string {
 	csvRecords, err := csvReader.ReadAll()
 
 	if err != nil {
-		panic("Error reading CSV content")
+		log.Println(err)
+		return nil, errors.New(err.Error())
 	}
 
-	return csvRecords
+	return csvRecords, nil
 }
 
-func convertRecordsIntoStructs(records [][]string) []Customer {
+func convertRecordsIntoStructs(records [][]string) ([]Customer, error) {
 	var customers []Customer
 
 	for index, row := range records {
@@ -70,7 +73,8 @@ func convertRecordsIntoStructs(records [][]string) []Customer {
 				eatenAsInt, err := strconv.Atoi(splittedString[2])
 
 				if err != nil {
-					panic("Couldn't convert string to int")
+					log.Println(err)
+					return nil, errors.New(err.Error())
 				}
 
 				customer := Customer{
@@ -84,7 +88,7 @@ func convertRecordsIntoStructs(records [][]string) []Customer {
 		}
 	}
 
-	return customers
+	return customers, nil
 }
 
 /**
@@ -183,9 +187,18 @@ func sortTopSnacksByHighest(snacks []CustomerTopSnack) []CustomerTopSnack {
 }
 
 func CustomerSnacksSorted() []CustomerTopSnack {
-	records := readAndParseCsvFile()
+	var snacks []CustomerTopSnack
+	records, err := readAndParseCsvFile()
 
-	customers := convertRecordsIntoStructs(records)
+	if err != nil {
+		return snacks
+	}
+
+	customers, err := convertRecordsIntoStructs(records)
+
+	if err != nil {
+		return snacks
+	}
 
 	stats := customersTopSnack(customers)
 
@@ -202,7 +215,8 @@ func main() {
 	jsonOutput, err := json.MarshalIndent(CustomerSnacksSorted(), "", "  ")
 
 	if err != nil {
-		panic("Error converting array struct to json")
+		log.Println(err)
+		return
 	}
 
 	log.Println(string(jsonOutput))
